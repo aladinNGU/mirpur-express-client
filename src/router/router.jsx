@@ -5,10 +5,11 @@ import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/Authentication/Login/Login";
 import Register from "../pages/Authentication/Register/Register";
 import Coverage from "../pages/Coverage";
-import SendParcel from "../pages/SendParcel/SendParcel";
 import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "../routes/PrivateRoute";
-import MyParcel from "../pages/Dashboard/MyParcel/MyParcel";
+import MyParcels from "../pages/Dashboard/MyParcels/MyParcels";
+import SendParcel from "../pages/SendParcel/SendParcel";
+import Payment from "../pages/Dashboard/Payment/Payment";
 
 export const router = createBrowserRouter([
   {
@@ -25,7 +26,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "sendParcel",
-        Component: SendParcel,
+        element: (
+          <PrivateRoute>
+            <SendParcel></SendParcel>
+          </PrivateRoute>
+        ),
         loader: async () => {
           const res = await fetch("/serviceCenters.json");
           return res.json();
@@ -65,7 +70,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "myParcel",
-        Component: MyParcel,
+        element: <MyParcels />,
+      },
+      {
+        path: "payment/:parcelId",
+        Component: Payment,
       },
     ],
   },

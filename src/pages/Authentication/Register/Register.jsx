@@ -58,7 +58,9 @@ const Register = () => {
                   </p>
                 )}
 
-                <button className="btn btn-neutral mt-4">Register</button>
+                <button className="btn btn-primary text-black mt-4">
+                  Register
+                </button>
               </fieldset>
               <p>
                 Already have an account?
