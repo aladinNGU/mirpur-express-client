@@ -1,14 +1,16 @@
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import React, { useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../../../hooks/useAuth";
+import Swal from "sweetalert2";
 
 const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { parcelId } = useParams();
   //   console.log(parcelId);
@@ -20,7 +22,7 @@ const PaymentForm = () => {
   const { data: parcelInfo = {} } = useQuery({
     queryKey: ["parcels", parcelId],
     queryFn: async () => {
-      const res = await axiosSecure.get(`parcels/${parcelId}`);
+      const res = await axiosSecure.get(`/parcels/${parcelId}`);
       return res.data;
     },
   });
@@ -72,15 +74,32 @@ const PaymentForm = () => {
       if (result.paymentIntent.status === "succeeded") {
         console.log("Payment succeeded");
         console.log(result);
+        const transactionId = result.paymentIntent.id;
         // Mark parcel paid and also create payment history
         const paymentData = {
           parcelId,
-          transactionId: result.paymentIntent.id,
+          transactionId: transactionId,
           email: user.email, // temporary until JWT added
         };
         const paymentRes = await axiosSecure.post("/payments", paymentData);
         if (paymentRes.data.paymentId) {
-          console.log("Payment successful");
+          //   console.log("Payment successful");
+          await Swal.fire({
+            icon: "success",
+            title: "Payment Successful!",
+            html: `
+        <p>Your payment has been completed.</p>
+        <p><strong>Transaction ID:</strong></p>
+        <p style="word-break: break-all; color: #16a34a;">
+            ${transactionId}
+        </p>
+        `,
+            confirmButtonText: "Go to My Parcels",
+            confirmButtonColor: "#16a34a",
+          });
+
+          // Redirect after clicking OK
+          navigate("/dashboard/MyParcel");
         }
       }
     }

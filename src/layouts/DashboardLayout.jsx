@@ -1,7 +1,14 @@
-import React from "react";
-import { Link, Outlet } from "react-router";
+import { Outlet } from "react-router";
 import MirpurExpressLogo from "../pages/shared/MirpurExpressLogo/MirpurExpressLogo";
-import { NavLink } from "react-router";
+import DashboardSidebarLink from "./DashboardSidebarLink";
+
+import {
+  HiHome,
+  HiArchive,
+  HiCreditCard,
+  HiLocationMarker,
+  HiUser,
+} from "react-icons/hi";
 
 const DashboardLayout = () => {
   return (
@@ -43,18 +50,29 @@ const DashboardLayout = () => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <ul className="menu bg-base-200 min-h-full w-80 p-4">
+        <ul className="menu bg-base-200 min-h-full w-80 p-4 space-y-1">
           {/* Sidebar content here */}
           <MirpurExpressLogo></MirpurExpressLogo>
-          <li className="mt-6">
-            <NavLink to="">Home</NavLink>
-          </li>
-          <li>
-            <NavLink to="MyParcel">My Parcels</NavLink>
-          </li>
-          <li>
-            <a>Sidebar Item 2</a>
-          </li>
+          <br />
+          <DashboardSidebarLink to="" icon={HiHome} end>
+            Home
+          </DashboardSidebarLink>
+
+          <DashboardSidebarLink to="MyParcel" icon={HiArchive}>
+            My Parcels
+          </DashboardSidebarLink>
+
+          <DashboardSidebarLink to="paymentHistory" icon={HiCreditCard}>
+            Payment History
+          </DashboardSidebarLink>
+
+          <DashboardSidebarLink to="track" icon={HiLocationMarker}>
+            Track a Parcel
+          </DashboardSidebarLink>
+
+          <DashboardSidebarLink to="profile" icon={HiUser}>
+            Update Profile
+          </DashboardSidebarLink>
         </ul>
       </div>
     </div>
