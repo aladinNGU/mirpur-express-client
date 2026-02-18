@@ -12,11 +12,14 @@ const PaymentHistory = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  const { isPending, data: payments = [] } = useQuery({
+  const {
+    isPending,
+    isError,
+    data: payments = [],
+  } = useQuery({
     queryKey: ["payments", user?.email],
-    enabled: !!user?.email,
     queryFn: async () => {
-      const res = await axiosSecure.get(`/payments?${user?.email}`);
+      const res = await axiosSecure.get(`/payments?${user.email}`);
       return res.data;
     },
   });
@@ -28,7 +31,7 @@ const PaymentHistory = () => {
         ?.toLowerCase()
         .includes(search.toLowerCase());
 
-      const paymentDate = new Date(payment.paidAt);
+      const paymentDate = payment.paidAt ? new Date(payment.paidAt) : null;
 
       const matchesFromDate = fromDate
         ? paymentDate >= new Date(fromDate)
@@ -56,6 +59,13 @@ const PaymentHistory = () => {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="text-center text-error py-10">
+        Failed to load payments.
+      </div>
+    );
+  }
   return (
     <div className="bg-base-100 shadow-xl rounded-2xl p-6 space-y-6">
       {/* Header */}
@@ -80,7 +90,8 @@ const PaymentHistory = () => {
           <div className="stat-value text-secondary text-xl">
             {new Intl.NumberFormat("en-US", {
               style: "currency",
-              currency: filteredPayments[0]?.currency?.toUpperCase() || "USD",
+              // currency: filteredPayments[0]?.currency?.toUpperCase() || "USD",
+              currency: "USD",
             }).format(totalAmount)}
           </div>
         </div>
@@ -179,7 +190,7 @@ const PaymentHistory = () => {
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: payment.currency?.toUpperCase() || "USD",
-                    }).format(payment.amount)}
+                    }).format(Number(payment.amount || 0))}
                   </td>
                   <td className="text-sm">{payment.paidBy}</td>
                   <td className="text-sm">

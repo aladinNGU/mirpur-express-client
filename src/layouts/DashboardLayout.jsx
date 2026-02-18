@@ -8,6 +8,8 @@ import {
   HiCreditCard,
   HiLocationMarker,
   HiUser,
+  HiUserGroup,
+  HiClock,
 } from "react-icons/hi";
 
 const DashboardLayout = () => {
@@ -64,6 +66,14 @@ const DashboardLayout = () => {
 
           <DashboardSidebarLink to="paymentHistory" icon={HiCreditCard}>
             Payment History
+          </DashboardSidebarLink>
+
+          <DashboardSidebarLink to="activeRiders" icon={HiUserGroup}>
+            Active Riders
+          </DashboardSidebarLink>
+
+          <DashboardSidebarLink to="pendingRiders" icon={HiClock}>
+            Pending Riders
           </DashboardSidebarLink>
 
           <DashboardSidebarLink to="track" icon={HiLocationMarker}>
