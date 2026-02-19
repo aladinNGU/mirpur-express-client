@@ -10,9 +10,14 @@ import {
   HiUser,
   HiUserGroup,
   HiClock,
+  HiShieldCheck,
 } from "react-icons/hi";
+import useUserRole from "../hooks/useUserRole";
 
 const DashboardLayout = () => {
+  const { role, roleLoading } = useUserRole();
+  console.log(role);
+
   return (
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
@@ -68,13 +73,21 @@ const DashboardLayout = () => {
             Payment History
           </DashboardSidebarLink>
 
-          <DashboardSidebarLink to="activeRiders" icon={HiUserGroup}>
-            Active Riders
-          </DashboardSidebarLink>
+          {!roleLoading && role === "admin" && (
+            <>
+              <DashboardSidebarLink to="activeRiders" icon={HiUserGroup}>
+                Active Riders
+              </DashboardSidebarLink>
 
-          <DashboardSidebarLink to="pendingRiders" icon={HiClock}>
-            Pending Riders
-          </DashboardSidebarLink>
+              <DashboardSidebarLink to="pendingRiders" icon={HiClock}>
+                Pending Riders
+              </DashboardSidebarLink>
+
+              <DashboardSidebarLink to="manageAdmin" icon={HiShieldCheck}>
+                Manage Admin
+              </DashboardSidebarLink>
+            </>
+          )}
 
           <DashboardSidebarLink to="track" icon={HiLocationMarker}>
             Track a Parcel

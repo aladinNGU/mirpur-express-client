@@ -1,45 +1,42 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
-import { HiEye, HiPencilAlt, HiTrash, HiUserRemove } from "react-icons/hi";
+import { HiEye, HiPencilAlt, HiTrash } from "react-icons/hi";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const ActiveRiders = () => {
   const axiosSecure = useAxiosSecure();
   const [selectedRider, setSelectedRider] = useState(null);
-  const [searchText, setSearchText] = useState("");
 
   const {
     data: riders = [],
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["activeRiders", searchText],
+    queryKey: ["activeRiders"],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/riders/active?search=${searchText}`);
+      const res = await axiosSecure.get("/riders/active");
       return res.data;
     },
   });
 
-  // 🔴 Deactivate Rider
-  const handleDeactivate = async (id) => {
+  const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: "Deactivate Rider?",
-      text: "This rider will no longer be active.",
+      title: "Are you sure?",
+      text: "This rider will be permanently deleted!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#f59e0b",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, Deactivate",
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, delete it!",
     });
 
     if (result.isConfirmed) {
-      const res = await axiosSecure.patch(`/riders/deactivate/${id}`);
-
-      if (res.data.modifiedCount > 0) {
+      const res = await axiosSecure.delete(`/riders/${id}`);
+      if (res.data.deletedCount > 0) {
         Swal.fire({
           icon: "success",
-          title: "Deactivated!",
+          title: "Deleted!",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -49,23 +46,24 @@ const ActiveRiders = () => {
     }
   };
 
-  // Delete Rider
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This rider will be permanently deleted!",
-      icon: "error",
+  const handleEdit = async (rider) => {
+    const { value: phone } = await Swal.fire({
+      title: "Edit Phone Number",
+      input: "text",
+      inputValue: rider.phone,
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      confirmButtonText: "Delete",
+      confirmButtonText: "Update",
     });
-    j;
 
-    if (result.isConfirmed) {
-      const res = await axiosSecure.delete(`/riders/${id}`);
-      if (res.data.deletedCount > 0) {
-        Swal.fire("Deleted!", "", "success");
-        setSelectedRider(null);
+    if (phone) {
+      const res = await axiosSecure.patch(`/riders/${rider._id}`, { phone });
+      if (res.data.modifiedCount > 0) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          timer: 2000,
+          showConfirmButton: false,
+        });
         refetch();
       }
     }
@@ -75,18 +73,7 @@ const ActiveRiders = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Active Riders</h2>
-
-      {/* 🔎 Search Bar */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search by name, email or phone..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="input input-bordered w-full max-w-md"
-        />
-      </div>
+      <h2 className="text-2xl font-bold mb-6">Active Riders</h2>
 
       <div className="overflow-x-auto">
         <table className="table w-full border">
@@ -94,9 +81,9 @@ const ActiveRiders = () => {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Phone</th>
               <th>Region</th>
-              <th>Status</th>
+              <th>Phone</th>
+              <th>Bike</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -110,42 +97,51 @@ const ActiveRiders = () => {
                   key={rider._id}
                   className={`transition-all duration-300 ${
                     isSelected
-                      ? "bg-blue-50 border-l-4 border-blue-500"
+                      ? "bg-blue-50 border-l-4 border-blue-500 shadow-md"
                       : "hover:bg-gray-50"
                   }`}
                 >
                   <td>{index + 1}</td>
-                  <td>{rider.name}</td>
-                  <td>{rider.phone}</td>
+                  <td className="font-medium">{rider.name}</td>
                   <td>
                     {rider.region}, {rider.district}
                   </td>
-
-                  <td>
-                    <span className="badge badge-success">Active</span>
-                  </td>
+                  <td>{rider.phone}</td>
+                  <td>{rider.bikeInfo}</td>
 
                   <td className="flex gap-2">
                     {/* View */}
                     <button
                       onClick={() => setSelectedRider(rider)}
-                      className="btn btn-sm btn-info text-white"
+                      className={`btn btn-sm transition-all ${
+                        isSelected
+                          ? "bg-blue-600 text-white"
+                          : "btn-info text-white"
+                      }`}
                     >
                       <HiEye />
                     </button>
 
-                    {/* Deactivate */}
+                    {/* Edit */}
                     <button
-                      onClick={() => handleDeactivate(rider._id)}
-                      className="btn btn-sm bg-orange-500 text-white"
+                      onClick={() => handleEdit(rider)}
+                      className={`btn btn-sm transition-all ${
+                        isSelected
+                          ? "bg-yellow-500 text-white scale-105"
+                          : "btn-warning text-white"
+                      }`}
                     >
-                      <HiUserRemove />
+                      <HiPencilAlt />
                     </button>
 
                     {/* Delete */}
                     <button
                       onClick={() => handleDelete(rider._id)}
-                      className="btn btn-sm btn-error text-white"
+                      className={`btn btn-sm transition-all ${
+                        isSelected
+                          ? "bg-red-600 text-white scale-105"
+                          : "btn-error text-white"
+                      }`}
                     >
                       <HiTrash />
                     </button>
@@ -157,10 +153,12 @@ const ActiveRiders = () => {
         </table>
       </div>
 
-      {/* Transparent Glass Modal */}
+      {/* Details Modal */}
       {selectedRider && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-white/30">
-          <div className="bg-white/80 backdrop-blur-lg border border-white/40 p-6 rounded-2xl w-96 shadow-2xl">
+        // <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-white/30">
+        // <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+        <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-sm">
+          <div className="bg-white/80 backdrop-blur-lg border border-white/40 p-6 rounded-2xl w-96 shadow-2xl transition-all duration-300">
             <h3 className="text-xl font-bold mb-4 text-blue-600">
               Rider Details
             </h3>
@@ -172,6 +170,9 @@ const ActiveRiders = () => {
               <strong>Email:</strong> {selectedRider.email}
             </p>
             <p>
+              <strong>Age:</strong> {selectedRider.age}
+            </p>
+            <p>
               <strong>Phone:</strong> {selectedRider.phone}
             </p>
             <p>
@@ -181,7 +182,10 @@ const ActiveRiders = () => {
               <strong>District:</strong> {selectedRider.district}
             </p>
             <p>
-              <strong>Bike:</strong> {selectedRider.bikeInfo}
+              <strong>Bike Info:</strong> {selectedRider.bikeInfo}
+            </p>
+            <p>
+              <strong>Bike Reg:</strong> {selectedRider.bikeRegistration}
             </p>
 
             <button

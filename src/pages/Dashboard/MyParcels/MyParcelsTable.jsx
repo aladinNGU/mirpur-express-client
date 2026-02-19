@@ -14,7 +14,7 @@ const MyParcelsTable = ({ parcels, onDelete }) => {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Parcel Name</th> {/* ✅ Added */}
+                <th>Parcel Name</th>
                 <th>Parcel Type</th>
                 <th>Delivery Charge</th>
                 <th>Created At</th>

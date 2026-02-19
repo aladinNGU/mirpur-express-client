@@ -65,11 +65,12 @@ const Login = () => {
               </fieldset>
               <p>
                 Don't have an account?
-                <Link className="btn btn-link" to="/register">
+                <Link state={{ from }} className="btn btn-link" to="/register">
                   Register
                 </Link>
               </p>
             </form>
+
             <SocialLogin></SocialLogin>
           </div>
         </div>
