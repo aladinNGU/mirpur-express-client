@@ -11,7 +11,9 @@ import {
   HiUserGroup,
   HiClock,
   HiShieldCheck,
+  HiUserAdd,
 } from "react-icons/hi";
+import { FaCheckCircle, FaMotorcycle, FaTasks } from "react-icons/fa";
 import useUserRole from "../hooks/useUserRole";
 
 const DashboardLayout = () => {
@@ -72,7 +74,21 @@ const DashboardLayout = () => {
           <DashboardSidebarLink to="paymentHistory" icon={HiCreditCard}>
             Payment History
           </DashboardSidebarLink>
-
+          {/* Rider links */}
+          {!roleLoading && role === "rider" && (
+            <>
+              <DashboardSidebarLink to="pendingDeliveries" icon={FaTasks}>
+                Pending Deliveries
+              </DashboardSidebarLink>
+              <DashboardSidebarLink
+                to="completedDeliveries"
+                icon={FaCheckCircle}
+              >
+                Completed Deliveries
+              </DashboardSidebarLink>
+            </>
+          )}
+          {/* Admin links */}
           {!roleLoading && role === "admin" && (
             <>
               <DashboardSidebarLink to="activeRiders" icon={HiUserGroup}>
@@ -85,6 +101,9 @@ const DashboardLayout = () => {
 
               <DashboardSidebarLink to="manageAdmin" icon={HiShieldCheck}>
                 Manage Admin
+              </DashboardSidebarLink>
+              <DashboardSidebarLink to="assignRider" icon={FaMotorcycle}>
+                Assign Rider
               </DashboardSidebarLink>
             </>
           )}
