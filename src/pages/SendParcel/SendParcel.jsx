@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import Swal from "sweetalert2";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useTrackingLogger from "../../hooks/useTrackingLogger";
 
 /* ---------------- Tracking ID Generator ---------------- */
 const generateTrackingId = () => {
@@ -19,6 +20,8 @@ const SendParcel = () => {
 
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const navigate = useNavigate();
+  const { logTracking } = useTrackingLogger();
 
   const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -159,7 +162,7 @@ const SendParcel = () => {
     if (result.isConfirmed) {
       const finalBooking = {
         ...data,
-        trackingId,
+        trackingId: trackingId,
         deliveryCharge: pricing.total,
         createdBy: user.email,
         paymentStatus: "unpaid",
@@ -170,7 +173,7 @@ const SendParcel = () => {
 
       console.log(finalBooking);
 
-      axiosSecure.post("/parcels", finalBooking).then((res) => {
+      axiosSecure.post("/parcels", finalBooking).then(async (res) => {
         console.log(res.data);
         if (res.data.insertedId) {
           // TODO: Here you could redirect to a payment page or trigger a payment modal
@@ -184,6 +187,13 @@ const SendParcel = () => {
             timer: 1500,
             showConfirmButton: false,
           });
+          await logTracking({
+            trackingId: finalBooking.trackingId,
+            status: "Parcel created",
+            details: `Created by ${user.displayName}`,
+            updatedBy: user.email,
+          });
+          navigate("/dashboard/myParcel");
         }
       });
 

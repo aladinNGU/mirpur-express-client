@@ -11,9 +11,8 @@ import {
   HiUserGroup,
   HiClock,
   HiShieldCheck,
-  HiUserAdd,
 } from "react-icons/hi";
-import { FaCheckCircle, FaMotorcycle, FaTasks } from "react-icons/fa";
+import { FaCheckCircle, FaMotorcycle, FaTasks, FaWallet } from "react-icons/fa";
 import useUserRole from "../hooks/useUserRole";
 
 const DashboardLayout = () => {
@@ -85,6 +84,9 @@ const DashboardLayout = () => {
                 icon={FaCheckCircle}
               >
                 Completed Deliveries
+              </DashboardSidebarLink>
+              <DashboardSidebarLink to="myEarnings" icon={FaWallet}>
+                My Earnings
               </DashboardSidebarLink>
             </>
           )}

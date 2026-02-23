@@ -1,13 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAuth from "../../../hooks/useAuth";
+import Swal from "sweetalert2";
 
 const CompletedDelivery = () => {
   const axiosSecure = useAxiosSecure();
   const { user } = useAuth();
   const email = user?.email;
+  const queryClient = useQueryClient();
 
-  // ✅ Fetch Completed Parcels
+  // 🔹 Fetch Completed Parcels
   const {
     data: parcels = [],
     isLoading,
@@ -23,26 +25,71 @@ const CompletedDelivery = () => {
     },
   });
 
-  // ✅ Calculate Rider Earning Per Parcel
+  // 🔹 Earning Calculation
   const calculateEarning = (parcel) => {
     const isSameDistrict = parcel.senderDistrict === parcel.receiverDistrict;
-
-    const percentage = isSameDistrict ? 0.8 : 0.3;
-
-    return (parcel.deliveryCharge || 0) * percentage;
+    return (parcel.deliveryCharge || 0) * (isSameDistrict ? 0.8 : 0.3);
   };
 
-  // ✅ Total Delivery Charge
   const totalDeliveryCharge = parcels.reduce(
     (sum, parcel) => sum + (parcel.deliveryCharge || 0),
     0,
   );
 
-  // ✅ Total Rider Earnings
   const totalRiderEarnings = parcels.reduce(
-    (sum, parcel) => sum + calculateEarning(parcel),
+    (sum, parcel) =>
+      parcel.cashoutStatus === "cashed out"
+        ? sum
+        : sum + calculateEarning(parcel),
     0,
   );
+
+  // 🔥 Mutation (v5 safe)
+  const cashoutMutation = useMutation({
+    mutationFn: async (parcelId) => {
+      const res = await axiosSecure.patch(`/parcels/${parcelId}/cashout`);
+      return res.data;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["completedDeliveries", email],
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Cashout Successful",
+        text: "Your earning has been cashed out.",
+      });
+    },
+
+    onError: (error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Cashout Failed",
+        text:
+          error?.response?.data?.message || "Something went wrong. Try again.",
+      });
+    },
+  });
+
+  const handleCashout = (parcelId, cashoutStatus) => {
+    if (cashoutStatus === "cashed out") {
+      Swal.fire("Already Cashed Out", "", "info");
+      return;
+    }
+    Swal.fire({
+      title: "Confirm Cash Out",
+      text: "Are you sure you want to cash out this earning?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Cash Out",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        cashoutMutation.mutate(parcelId);
+      }
+    });
+  };
 
   if (isLoading) {
     return (
@@ -62,104 +109,61 @@ const CompletedDelivery = () => {
 
   return (
     <div className="p-6">
-      {/* Header Section */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">
-          Completed Deliveries ({parcels.length})
-        </h2>
+      {/* Summary */}
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <div className="bg-base-200 p-4 rounded-xl shadow">
+          <p className="text-sm text-gray-500">Total Delivery Charge</p>
+          <p className="text-xl font-bold text-primary">
+            ৳ {totalDeliveryCharge.toFixed(2)}
+          </p>
+        </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Total Delivery Charge */}
-          <div className="bg-base-200 p-4 rounded-xl shadow">
-            <p className="text-sm text-gray-500">Total Delivery Charge</p>
-            <p className="text-xl font-bold text-primary">
-              ৳ {totalDeliveryCharge.toFixed(2)}
-            </p>
-          </div>
-
-          {/* Total Rider Earnings */}
-          <div className="bg-success text-white p-4 rounded-xl shadow">
-            <p className="text-sm">Total Rider Earnings</p>
-            <p className="text-xl font-bold">
-              ৳ {totalRiderEarnings.toFixed(2)}
-            </p>
-          </div>
+        <div className="bg-success text-white p-4 rounded-xl shadow">
+          <p className="text-sm">Available Rider Earnings</p>
+          <p className="text-xl font-bold">৳ {totalRiderEarnings.toFixed(2)}</p>
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto bg-base-100 rounded-xl shadow">
         <table className="table table-zebra">
-          <thead className="bg-base-200">
+          <thead>
             <tr>
               <th>Tracking ID</th>
-              <th>Parcel</th>
-              <th>Receiver</th>
-              <th>Area</th>
-              <th>Delivery Charge</th>
-              <th>Rider Earning</th>
+              <th>Charge</th>
+              <th>Earning</th>
               <th>Status</th>
-              <th>Date</th>
+              <th>Cashout</th>
             </tr>
           </thead>
-
           <tbody>
             {parcels.map((parcel) => (
               <tr key={parcel._id}>
-                <td className="font-semibold text-primary">
-                  {parcel.trackingId}
-                </td>
-
-                <td>
-                  {parcel.parcelType}
-                  <div className="text-sm text-gray-500">
-                    {parcel.parcelName}
-                  </div>
-                </td>
-
-                <td>
-                  {parcel.receiverName}
-                  <div className="text-sm text-gray-500">
-                    {parcel.receiverContact}
-                  </div>
-                </td>
-
-                <td>
-                  {parcel.receiverDistrict}
-                  <div className="text-xs text-gray-400">
-                    {parcel.receiverArea}
-                  </div>
-                </td>
-
+                <td>{parcel.trackingId}</td>
                 <td>৳ {parcel.deliveryCharge}</td>
-
-                <td className="font-semibold text-success">
+                <td className="text-success font-semibold">
                   ৳ {calculateEarning(parcel).toFixed(2)}
                 </td>
-
+                <td>{parcel.deliveryStatus}</td>
                 <td>
-                  <span
-                    className={`badge ${
-                      parcel.deliveryStatus === "Delivered"
-                        ? "badge-success"
-                        : "badge-accent"
-                    }`}
-                  >
-                    {parcel.deliveryStatus}
-                  </span>
+                  {parcel.cashoutStatus === "cashed out" ? (
+                    <span className="badge badge-success">Cashed Out</span>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        handleCashout(parcel._id, parcel.cashoutStatus)
+                      }
+                      disabled={cashoutMutation.isPending}
+                      className="btn btn-sm btn-warning"
+                    >
+                      {cashoutMutation.isPending ? "Processing..." : "Cash Out"}
+                    </button>
+                  )}
                 </td>
-
-                <td>{new Date(parcel.creationDate).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {parcels.length === 0 && (
-          <div className="text-center py-10 text-gray-500">
-            No Completed Deliveries Yet
-          </div>
-        )}
       </div>
     </div>
   );
