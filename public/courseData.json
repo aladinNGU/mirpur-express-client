@@ -1,0 +1,84 @@
+{
+  "courseId": "fswd-mern-001",
+  "title": "Full Stack Web Development",
+  "subtitle": "MERN Stack: MongoDB, Express.js, React, and Node.js",
+  "description": "Full stack web development refers to the development of both the front end (client side) and the back end (server side) of a web application.",
+  "chapters": [
+    {
+      "chapterId": "1",
+      "chapterNumber": 1,
+      "title": "HTML, CSS and Github as a Beginner",
+      "slug": "html-css-github-beginner",
+      "lessons": [
+        {
+          "lessonId": "1-1",
+          "title": "Explore VSCode and What is HTML",
+          "slug": "explore-vscode-what-is-html",
+          "description": "Introduction to HTML and Visual Studio Code setup.",
+          "topics": [
+            {
+              "topicId": "1-1",
+              "title": "Introduction to string and string vs array",
+              "description": "Understanding string immutability and differences from arrays",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "text": "Let’s understand how string differs from array."
+                },
+                {
+                  "type": "code",
+                  "language": "javascript",
+                  "code": "const numbers = [2, 8, 9, 20, 46];\nconsole.log(numbers);\nnumbers[1] = 100;\nconsole.log(numbers);\n\nconst myName = \"Alauddin\";\nfor (let letter of myName) {\n  console.log(letter);\n}\n\nconsole.log(myName);\n// myName[0] = \"F\"; // TypeError\n\nconst newName = \"S\" + myName.slice(1);\nconsole.log(newName);"
+                }
+              ]
+            },
+            {
+              "topicId": "1-2",
+              "title": "HTML File Structure",
+              "description": "Basic HTML boilerplate structure",
+              "content": [
+                {
+                  "type": "code",
+                  "language": "html",
+                  "code": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>My First Page</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n</body>\n</html>"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "lessonId": "1-2",
+          "title": "HTML Text Formatting",
+          "slug": "html-text-formatting",
+          "description": "Creating paragraphs and formatting text using b, i, strong, em.",
+          "topics": [
+            {
+              "topicId": "1-1",
+              "title": "Paragraph and Heading Tags",
+              "description": "Understanding p, h1-h6 tags.",
+              "content": [
+                {
+                  "type": "code",
+                  "language": "html",
+                  "code": "<h1>Main Heading</h1>\n<p>This is a paragraph.</p>"
+                }
+              ]
+            },
+            {
+              "topicId": "1-2",
+              "title": "Text Formatting Tags",
+              "description": "Using b, i, strong and em.",
+              "content": [
+                {
+                  "type": "code",
+                  "language": "html",
+                  "code": "<p><b>Bold</b></p>\n<p><strong>Strong Importance</strong></p>\n<p><i>Italic</i></p>\n<p><em>Emphasized</em></p>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

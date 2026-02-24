@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import useTrackingLogger from "../../../hooks/useTrackingLogger";
+import useAuth from "../../../hooks/useAuth";
 
-const AssignRiders = () => {
+const AssignRider = () => {
   const axiosSecure = useAxiosSecure();
+  const { logTracking } = useTrackingLogger();
+  const { user } = useAuth();
 
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -46,6 +50,13 @@ const AssignRiders = () => {
 
     document.getElementById("assign_modal").close();
     alert("Rider Assigned Successfully");
+
+    await logTracking({
+      trackingId: selectedParcel.trackingId,
+      status: "Rider Assigned",
+      details: `Assigned to ${selectedRider.name}`,
+      updatedBy: user.email,
+    });
   };
 
   return (
@@ -92,7 +103,9 @@ const AssignRiders = () => {
             <select
               className="select select-bordered w-full"
               onChange={(e) =>
-                setSelectedRider(riders.find((r) => r._id === e.target.value))
+                setSelectedRider(
+                  riders.find((r) => r._id.toString() === e.target.value),
+                )
               }
             >
               <option value="">Choose Rider</option>
@@ -118,4 +131,4 @@ const AssignRiders = () => {
   );
 };
 
-export default AssignRiders;
+export default AssignRider;

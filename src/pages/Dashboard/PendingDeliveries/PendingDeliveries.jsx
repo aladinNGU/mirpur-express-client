@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import useAuth from "../../../hooks/useAuth";
+import useTrackingLogger from "../../../hooks/useTrackingLogger";
 
 const PendingDeliveries = () => {
   const axiosSecure = useAxiosSecure();
+  const { logTracking } = useTrackingLogger();
   const { user } = useAuth();
   const email = user?.email;
   console.log(email);
@@ -22,7 +24,7 @@ const PendingDeliveries = () => {
       return res.data.data;
     },
   });
-  console.log(parcels);
+  //   console.log(parcels);
 
   // ✅ Update Status
   const handleStatusUpdate = async (parcel) => {
@@ -54,6 +56,17 @@ const PendingDeliveries = () => {
       if (res.data.success) {
         Swal.fire("Success", "Status Updated", "success");
 
+        // Log tracking
+        let trackDetails = `Picked up by ${user.displayName}`;
+        if (newStatus === "Delivery Completed") {
+          trackDetails = `Delivered by ${user.displayName}`;
+        }
+        await logTracking({
+          trackingId: parcel.trackingId,
+          status: newStatus,
+          details: trackDetails,
+          updatedBy: user.email,
+        });
         // ✅ Refetch fresh data
         refetch();
       }

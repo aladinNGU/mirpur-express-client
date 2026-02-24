@@ -5,12 +5,14 @@ import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../../../hooks/useAuth";
 import Swal from "sweetalert2";
+import useTrackingLogger from "../../../hooks/useTrackingLogger";
 
 const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { logTracking } = useTrackingLogger();
 
   const { parcelId } = useParams();
   //   console.log(parcelId);
@@ -96,6 +98,13 @@ const PaymentForm = () => {
         `,
             confirmButtonText: "Go to My Parcels",
             confirmButtonColor: "#16a34a",
+          });
+
+          await logTracking({
+            trackingId: parcelInfo.trackingId,
+            status: "Payment Paid",
+            details: `Paid by ${user.displayName}`,
+            updatedBy: user.email,
           });
 
           // Redirect after clicking OK
